@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+
+    <meta name="description" content="Ctrl+Shift+Code is a team of three Grade 10 students creating immersive experiences with Alice 3, 3D modelling, rendering and animations, and interactive storytelling.">
+    <meta name="keywords" content="Alice 3, Ctrl+Shift+Code, 3D Animation, CMU-Q Competition, Storytelling, Interactive Experiences, Alice Programming Competition, Birla Public School, 3D Coding">
+    <meta name="author" content="Ctrl+Shift+Code Team">
+    <meta property="og:title" content="Ctrl+Shift+Code - Cool Coders">
+    <meta property="og:description" content="Explore Alice 3 animations and award-winning storytelling from Ctrl+Shift+Code.">
+    <meta property="og:image" content="favicon.png">
+    <meta property="og:type" content="website">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ctrl+Shift+Code</title>
+    <link rel="icon" type="image/x-icon" href="favicon.png">
+    <script src="Ctrl+Shift+Code_files/3.4.16"></script>
+    <script src="Ctrl+Shift+Code_files/three.min.js"></script>
+    <script src="Ctrl+Shift+Code_files/gsap.min.js"></script>
+    <script src="Ctrl+Shift+Code_files/ScrollTrigger.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            overflow-x: hidden;
+            scrollbar-width: none;
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .section {
+            min-height: 100vh;
+            width: 100%;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #hero-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .card {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 198, 255, 0.2);
+        }
+        
+        .team-member {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        
+        .achievement {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00c6ff;
+            border-radius: 50%;
+            position: fixed;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.2s ease;
+        }
+        
+        .cursor-follower {
+            width: 8px;
+            height: 8px;
+            background-color: #0072ff;
+            border-radius: 50%;
+            position: fixed;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+        }
+        
+        .expand {
+            transform: scale(2.5) translate(-25%, -25%);
+            background: rgba(0, 198, 255, 0.2);
+            border: 1px solid rgba(0, 198, 255, 0.5);
+        }
+        
+        .code-block {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 198, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            z-index: 9998;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.bottom-10{bottom:2.5rem}.left-0{left:0px}.left-1\/2{left:50%}.top-0{top:0px}.top-16{top:4rem}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-10{margin-bottom:2.5rem}.mb-12{margin-bottom:3rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-2{margin-right:0.5rem}.mt-20{margin-top:5rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-40{height:10rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-64{height:16rem}.h-full{height:100%}.w-10{width:2.5rem}.w-40{width:10rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-full{width:100%}.max-w-7xl{max-width:80rem}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%, 100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(0.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,0.2,1)}}.animate-bounce{animation:bounce 1s infinite}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-12{gap:3rem}.gap-8{gap:2rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-8 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(2rem * var(--tw-space-x-reverse));margin-left:calc(2rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-blue-600{--tw-border-opacity:1;border-color:rgb(37 99 235 / var(--tw-border-opacity, 1))}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-blue-600\/20{background-color:rgb(37 99 235 / 0.2)}.bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39 / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-opacity-90{--tw-bg-opacity:0.9}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128 / var(--tw-text-opacity, 1))}.text-pink-500{--tw-text-opacity:1;color:rgb(236 72 153 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-300{--tw-text-opacity:1;color:rgb(253 224 71 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.hover\:bg-blue-600\/20:hover{background-color:rgb(37 99 235 / 0.2)}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:text-blue-300:hover{--tw-text-opacity:1;color:rgb(147 197 253 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}@media (min-width: 768px){.md\:mb-0{margin-bottom:0px}.md\:mr-6{margin-right:1.5rem}.md\:flex{display:flex}.md\:hidden{display:none}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:items-center{align-items:center}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-7xl{font-size:4.5rem;line-height:1}.md\:text-base{font-size:1rem;line-height:1.5rem}}</style></head>
+<body style="">
+    <div class="cursor" style="transform: translate(-50%, -50%) translate(450px, 273px);"></div>
+    <div class="cursor-follower" style="transform: translate(-50%, -50%) translate(450px, 273px);"></div>
+    <div class="progress-bar"></div>
+    
+    <canvas id="hero-canvas" width="1366" height="643" style="width: 1366px; height: 643px;"></canvas>
+    
+    <header class="fixed top-0 left-0 w-full z-50 px-6 py-4">
+        <nav class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="code-font text-2xl font-bold">
+                    <span class="text-blue-400">&lt;</span>
+                    <span class="gradient-text">CTRL+SHIFT+CODE</span>
+                    <span class="text-blue-400">/&gt;</span>
+                </div>
+            </div>
+            <ul class="hidden md:flex space-x-8">
+                <li><a href="#home" class="nav-link text-gray-300 hover:text-white">Home</a></li>
+                <li><a href="#about" class="nav-link text-gray-300 hover:text-white">About</a></li>
+                <li><a href="#team" class="nav-link text-gray-300 hover:text-white">Team</a></li>
+                <li><a href="#achievements" class="nav-link text-gray-300 hover:text-white">Achievements</a></li>
+                <li><a href="#project" class="nav-link text-gray-300 hover:text-white">Project</a></li>
+            </ul>
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-black bg-opacity-90 backdrop-blur-md py-4 px-6">
+            <ul class="space-y-4">
+                <li><a href="#home" class="block text-gray-300 hover:text-white">Home</a></li>
+                <li><a href="#about" class="block text-gray-300 hover:text-white">About</a></li>
+                <li><a href="#team" class="block text-gray-300 hover:text-white">Team</a></li>
+                <li><a href="#achievements" class="block text-gray-300 hover:text-white">Achievements</a></li>
+                <li><a href="#project" class="block text-gray-300 hover:text-white">Project</a></li>
+            </ul>
+        </div>
+    </header>
+    
+    <section id="home" class="section flex items-center justify-center">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 opacity-0" id="main-title" style="transform: translate(0px); opacity: 1;">
+                <span class="gradient-text">CTRL+SHIFT+CODE</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-400 mb-10 opacity-0" id="main-subtitle" style="transform: translate(0px); opacity: 1;">
+                Crafting immersive experiences with Alice 3
+            </p>
+            <div class="flex justify-center space-x-4 opacity-0" id="main-buttons" style="transform: translate(0px); opacity: 1;">
+                <a href="#about" class="btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-medium">Discover Our Work</a>
+                <a href="#team" class="btn bg-transparent border border-blue-600 text-blue-400 hover:text-white hover:bg-blue-600/20 px-8 py-3 rounded-full font-medium">Meet The Team</a>
+            </div>
+            
+            <div class="mt-20 opacity-0" id="code-snippet" style="transform: translate(0px); opacity: 1;">
+                <div class="code-block bg-gray-900 p-4 rounded-lg text-left inline-block">
+                    <pre class="code-font text-sm md:text-base"><span class="text-pink-500">function</span> <span class="text-blue-400">createAwesome</span>() {
+    <span class="text-green-400">// CTRL+SHIFT+CODE signature style</span>
+    <span class="text-pink-500">const</span> team = [<span class="text-yellow-300">'Jonathan'</span>, <span class="text-yellow-300">'Nishad'</span>, <span class="text-yellow-300">'Avrin'</span>];
+    <span class="text-pink-500">const</span> skills = [<span class="text-yellow-300">'Alice 3'</span>, <span class="text-yellow-300">'3D Modeling'</span>, <span class="text-yellow-300">'Animation'</span>];
+    <span class="text-pink-500">return</span> <span class="text-blue-400">buildAmazingProject</span>(team, skills);
+}</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </section>
+    
+    <section id="about" class="section flex items-center">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-12 opacity-0" id="about-title" style="transform: translate(0px); opacity: 0;">
+                <span class="gradient-text">About Us</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="opacity-0" id="about-text" style="transform: translate(0px); opacity: 0;">
+                    <p class="text-lg text-gray-300 mb-6">
+                        We are <span class="gradient-text font-semibold">CTRL+SHIFT+CODE</span>, a team of passionate Grade 10 students from Birla Public School, Qatar who specialize in coding and love creating immersive experiences using Alice 3.
+                    </p>
+                    <p class="text-lg text-gray-300 mb-6">
+                        Our journey began with a shared passion for 
+coding and 3D animation, which led us to form a team that consistently 
+pushes the boundaries of what's possible with Alice 3.
+                    </p>
+                    <p class="text-lg text-gray-300">
+                        With a track record of excellence in 
+competitions at CMU-Q, we're dedicated to crafting innovative solutions 
+that combine technical expertise with creative vision.
+                    </p>
+                </div>
+                
+                <div class="opacity-0" id="about-image" style="transform: translate(0px); opacity: 0;">
+                    <div class="card p-6 h-full">
+                        <div class="relative h-64 w-full mb-6 overflow-hidden rounded-lg">
+                            <svg class="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#00c6ff;stop-opacity:1"></stop>
+                                        <stop offset="100%" style="stop-color:#0072ff;stop-opacity:1"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <rect width="400" height="300" fill="#1a1a1a" rx="10" ry="10"></rect>
+                                <circle cx="200" cy="150" r="80" fill="none" stroke="url(#grad1)" stroke-width="2"></circle>
+                                <circle cx="200" cy="150" r="60" fill="none" stroke="url(#grad1)" stroke-width="2" stroke-dasharray="5,5"></circle>
+                                <path d="M160,150 L240,150 M200,110 L200,190" stroke="url(#grad1)" stroke-width="4"></path>
+                                <g transform="translate(150, 100)">
+                                    <rect width="100" height="60" fill="none" stroke="#4a5568" stroke-width="2" rx="5" ry="5"></rect>
+                                    <line x1="10" y1="15" x2="90" y2="15" stroke="#4a5568" stroke-width="2"></line>
+                                    <line x1="10" y1="30" x2="70" y2="30" stroke="#4a5568" stroke-width="2"></line>
+                                    <line x1="10" y1="45" x2="50" y2="45" stroke="#4a5568" stroke-width="2"></line>
+                                </g>
+                                <text x="200" y="220" text-anchor="middle" fill="#f0f0f0" font-family="monospace" font-size="12">Alice 3 Development</text>
+                            </svg>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-xl font-semibold">Our Expertise</h3>
+                                <p class="text-gray-400">3D Animation &amp; Interactive Storytelling</p>
+                            </div>
+                            <div class="bg-blue-600/20 p-2 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="team" class="section">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-12 opacity-0" id="team-title" style="transform: translate(0px); opacity: 0;">
+                <span class="gradient-text">Meet The Team</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Jonathan -->
+                <div class="card p-6 team-member" style="transform: translate(0px, 50px); opacity: 0;">
+                    <div class="relative h-64 w-full mb-6 overflow-hidden rounded-lg bg-gray-800 flex items-center justify-center">
+                        <img src="images/jonathan.jpg" alt="Jonathan" class="w-40 h-40 object-cover rounded-full">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Jonathan</h3>
+                    <p class="text-gray-400 mb-4">Team Lead &amp; 3D Designer</p>
+                    <p class="text-gray-300 mb-4">Specializes in creating immersive 3D environments and character animations in Alice 3.</p>
+                    <div class="flex space-x-2 mb-4">
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Alice 3</span>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">3D Design</span>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Leadership</span>
+                    </div>
+                    <a href="mailto:jthweb@duck.com" class="text-blue-400 hover:text-blue-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        jthweb@duck.com
+                    </a>
+                </div>
+                
+                <!-- Nishad -->
+                <div class="card p-6 team-member">
+                    <div class="relative h-64 w-full mb-6 overflow-hidden rounded-lg bg-gray-800 flex items-center justify-center">
+                        <img src="images/nishad.jpg" alt="Nishad" class="w-40 h-40 object-cover rounded-full">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Nishad</h3>
+                    <p class="text-gray-400 mb-4">Technical Developer</p>
+                    <p class="text-gray-300 mb-4">Expert in Alice 3 programming logic and interactive storytelling techniques.</p>
+                    <div class="flex space-x-2 mb-4">
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Alice 3</span>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Programming</span>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Logic Design</span>
+                    </div>
+                    <a href="mailto:nishad@ctrlshiftcode.com" class="text-blue-400 hover:text-blue-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        nishad@ctrlshiftcode.com
+                    </a>
+                </div>
+                
+                <!-- Avrin -->
+                <div class="card p-6 team-member">
+                    <div class="relative h-64 w-full mb-6 overflow-hidden rounded-lg bg-gray-800 flex items-center justify-center">
+                        <img src="images/avrin.jpg" alt="Avrin" class="w-40 h-40 object-cover rounded-full">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Avrin</h3>
+                    <p class="text-gray-400 mb-4">Creative Director</p>
+                    <p class="text-gray-300 mb-4">Focuses on storytelling, user experience, and visual aesthetics in all projects.</p>
+                    <div class="flex space-x-2 mb-4">
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Alice 3</span>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">UX Design</span>
+                        <span class="bg-blue-600/20 text-blue-400 text-xs px-3 py-1 rounded-full">Storytelling</span>
+                    </div>
+                    <a href="mailto:avrin@ctrlshiftcode.com" class="text-blue-400 hover:text-blue-300 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        avrin@ctrlshiftcode.com
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="achievements" class="section">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-12 opacity-0" id="achievements-title" style="transform: translate(0px); opacity: 0;">
+                <span class="gradient-text">Our Achievements</span>
+            </h2>
+            
+            <div class="space-y-8">
+                <div class="card p-6 achievement" style="transform: translate(50px); opacity: 0;">
+                    <div class="flex flex-col md:flex-row items-start md:items-center">
+                        <div class="bg-blue-600/20 p-4 rounded-full mb-4 md:mb-0 md:mr-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">2nd Place - Advanced Level</h3>
+                            <p class="text-gray-400 mb-2"><b>Tomorrow's Too Late</b> - Alice Programming Competition 2023 - CMU-Q</p>
+                            <p class="text-gray-300">Created an immersive educational simulation based on the topic Climate Change that showcased how the Earth is facing dire problems along advanced Alice 3 techniques and interactive storytelling.</p>
+<a href="https://drive.google.com/first-project-link" target="_blank" download class="block text-center w-fit mx-auto mt-4">
+    <button class="btn bg-transparent border border-blue-600 text-blue-400 hover:text-white hover:bg-blue-600/20 px-8 py-3 rounded-full font-medium">
+        Watch Project Video
+    </button>
+</a>
+
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6 achievement">
+                    <div class="flex flex-col md:flex-row items-start md:items-center">
+                        <div class="bg-blue-600/20 p-4 rounded-full mb-4 md:mb-0 md:mr-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">3rd Place - Advanced Level</h3>
+                            <p class="text-gray-400 mb-2"><b>Better Late Than Never</b> - Alice Programming Competition 2024 - CMU-Q</p>
+                            <p class="text-gray-300">Developed an innovative interactive experience that combined storytelling and gameplay using complex programming logic based on the topic Climate Change that emphasized the user to make wise choices and save the future of the village.</p>
+<a href="https://drive.google.com/third-prize-project-link" target="_blank" download class="block text-center w-fit mx-auto mt-4">
+    <button class="btn bg-transparent border border-blue-600 text-blue-400 hover:text-white hover:bg-blue-600/20 px-8 py-3 rounded-full font-medium">
+        Watch Project Video
+    </button>
+</a>
+
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card p-6 achievement">
+                    <div class="flex flex-col md:flex-row items-start md:items-center">
+                        <div class="bg-blue-600/20 p-4 rounded-full mb-4 md:mb-0 md:mr-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">Current Project</h3>
+                            <p class="text-gray-400 mb-2"><b>Ctrl+Shift+Code</b> - Alice Programming Competition 2023 - CMU-Q</p>
+                            <p class="text-gray-300">Working on our most ambitious project yet, combining advanced Alice 3 techniques with innovative stories and new coding approaches.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="project" class="section">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-12 opacity-0" id="project-title" style="transform: translate(0px); opacity: 0;">
+                <span class="gradient-text">Current Project</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="opacity-0" id="project-text" style="transform: translate(0px); opacity: 0;">
+                    <h3 class="text-2xl font-bold mb-4">Preparing for Alice Programming Competition 2025</h3>
+                    <p class="text-lg text-gray-300 mb-6">
+                        Our team is currently developing an innovative 
+Alice 3 project that pushes the boundaries of what's possible with the 
+platform.
+                    </p>
+                    <p class="text-lg text-gray-300 mb-6">
+                        Building on our previous competition 
+experiences, we're focusing on creating an immersive interactive 
+experience that combines advanced programming techniques with compelling
+ storytelling.
+                    </p>
+                    <p class="text-lg text-gray-300">
+                        Stay tuned for updates as we progress toward the 2025 competition at CMU-Q!
+                    </p>
+                </div>
+                
+                <div class="opacity-0" id="project-image" style="transform: translate(0px); opacity: 0;">
+                    <div class="card p-6 h-full">
+                        <div class="relative h-64 w-full mb-6 overflow-hidden rounded-lg">
+                            <svg class="w-full h-full" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#00c6ff;stop-opacity:0.5"></stop>
+                                        <stop offset="100%" style="stop-color:#0072ff;stop-opacity:0.5"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <rect width="400" height="300" fill="#1a1a1a" rx="10" ry="10"></rect>
+                                
+                                <!-- 3D World Representation -->
+                                <g transform="translate(50, 50)">
+                                    <rect width="300" height="200" fill="url(#grad2)" rx="5" ry="5"></rect>
+                                    
+                                    <!-- Mountains -->
+                                    <path d="M0,200 L60,100 L100,150 L160,50 L220,150 L300,80 L300,200 Z" fill="#2a3a4a"></path>
+                                    
+                                    <!-- Trees -->
+                                    <g transform="translate(80, 140)">
+                                        <rect width="10" height="20" fill="#8b5a2b" x="-5" y="0"></rect>
+                                        <polygon points="0,-30 15,0 -15,0" fill="#2d6a4f"></polygon>
+                                        <polygon points="0,-45 12,-15 -12,-15" fill="#2d6a4f"></polygon>
+                                    </g>
+                                    
+                                    <g transform="translate(200, 130)">
+                                        <rect width="10" height="20" fill="#8b5a2b" x="-5" y="0"></rect>
+                                        <polygon points="0,-30 15,0 -15,0" fill="#2d6a4f"></polygon>
+                                        <polygon points="0,-45 12,-15 -12,-15" fill="#2d6a4f"></polygon>
+                                    </g>
+                                    
+                                    <!-- Character -->
+                                    <g transform="translate(150, 150)">
+                                        <circle cx="0" cy="-15" r="10" fill="#f0f0f0"></circle>
+                                        <rect width="20" height="30" fill="#3b82f6" x="-10" y="-5" rx="5" ry="5"></rect>
+                                    </g>
+                                    
+                                    <!-- Code Blocks -->
+                                    <g transform="translate(20, 20)">
+                                        <rect width="80" height="20" fill="#4a5568" rx="3" ry="3" opacity="0.7"></rect>
+                                    </g>
+                                    <g transform="translate(30, 50)">
+                                        <rect width="100" height="20" fill="#4a5568" rx="3" ry="3" opacity="0.7"></rect>
+                                    </g>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-xl font-semibold">Project Preview</h3>
+                                <p class="text-gray-400">Currently Unavailable</p>
+                            </div>
+                            <div class="bg-blue-600/20 p-2 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="bg-gray-900 py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-8 md:mb-0">
+                    <div class="code-font text-2xl font-bold mb-4">
+                        <span class="text-blue-400">&lt;</span>
+                        <span class="gradient-text">Ctrl+Shift+Code</span>
+                        <span class="text-blue-400">/&gt;</span>
+                    </div>
+                    <p class="text-gray-400">Creating immersive experiences with Alice 3</p>
+                </div>
+                
+                <div class="flex flex-col items-center md:items-end">
+                    <p class="text-gray-400 mb-2">© 2025 Ctrl_Shift_Code. All rights reserved.</p>
+                    <p class="text-gray-500">Hosted using <a href="https://open-domains.net/">Open-Domains</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Initialize Three.js background
+        const canvas = document.getElementById('hero-canvas');
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            alpha: true,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        
+        // Create particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000;
+        
+        const posArray = new Float32Array(particlesCount * 3);
+        const scaleArray = new Float32Array(particlesCount);
+        
+        for (let i = 0; i < particlesCount * 3; i += 3) {
+            posArray[i] = (Math.random() - 0.5) * 15;
+            posArray[i + 1] = (Math.random() - 0.5) * 15;
+            posArray[i + 2] = (Math.random() - 0.5) * 15;
+            scaleArray[i / 3] = Math.random();
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scaleArray, 1));
+        
+        // Create material
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0x00c6ff,
+            transparent: true,
+            opacity: 0.8,
+            sizeAttenuation: true
+        });
+        
+        // Create points
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        // Animation
+        const clock = new THREE.Clock();
+        
+        const animate = () => {
+            const elapsedTime = clock.getElapsedTime();
+            
+            particlesMesh.rotation.y = elapsedTime * 0.05;
+            particlesMesh.rotation.x = elapsedTime * 0.03;
+            
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.2
+            });
+            
+            gsap.to(cursorFollower, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.1
+            });
+        });
+        
+        document.addEventListener('mousedown', () => {
+            cursor.classList.add('expand');
+        });
+        
+        document.addEventListener('mouseup', () => {
+            cursor.classList.remove('expand');
+        });
+        
+        // Links and buttons hover effect
+        const links = document.querySelectorAll('a, button');
+        
+        links.forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                cursor.classList.add('expand');
+            });
+            
+            link.addEventListener('mouseleave', () => {
+                cursor.classList.remove('expand');
+            });
+        });
+        
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Scroll animations with GSAP
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Hero section animations
+        gsap.to('#main-title', {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            delay: 0.5
+        });
+        
+        gsap.to('#main-subtitle', {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            delay: 0.7
+        });
+        
+        gsap.to('#main-buttons', {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            delay: 0.9
+        });
+        
+        gsap.to('#code-snippet', {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            delay: 1.1
+        });
+        
+        // About section animations
+        gsap.to('#about-title', {
+            scrollTrigger: {
+                trigger: '#about',
+                start: 'top 80%'
+            },
+            opacity: 1,
+            y: 0,
+            duration: 1
+        });
+        
+        gsap.to('#about-text', {
+            scrollTrigger: {
+                trigger: '#about',
+                start: 'top 70%'
+            },
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            delay: 0.3
+        });
+        
+        gsap.to('#about-image', {
+            scrollTrigger: {
+                trigger: '#about',
+                start: 'top 70%'
+            },
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            delay: 0.5
+        });
+        
+        // Team section animations
+        gsap.to('#team-title', {
+            scrollTrigger: {
+                trigger: '#team',
+                start: 'top 80%'
+            },
+            opacity: 1,
+            y: 0,
+            duration: 1
+        });
+        
+        gsap.to('.team-member', {
+            scrollTrigger: {
+                trigger: '#team',
+                start: 'top 70%'
+            },
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            stagger: 0.2
+        });
+        
+        // Achievements section animations
+        gsap.to('#achievements-title', {
+            scrollTrigger: {
+                trigger: '#achievements',
+                start: 'top 80%'
+            },
+            opacity: 1,
+            y: 0,
+            duration: 1
+        });
+        
+        gsap.to('.achievement', {
+            scrollTrigger: {
+                trigger: '#achievements',
+                start: 'top 70%'
+            },
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            stagger: 0.2
+        });
+        
+        // Project section animations
+        gsap.to('#project-title', {
+            scrollTrigger: {
+                trigger: '#project',
+                start: 'top 80%'
+            },
+            opacity: 1,
+            y: 0,
+            duration: 1
+        });
+        
+        gsap.to('#project-text', {
+            scrollTrigger: {
+                trigger: '#project',
+                start: 'top 70%'
+            },
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            delay: 0.3
+        });
+        
+        gsap.to('#project-image', {
+            scrollTrigger: {
+                trigger: '#project',
+                start: 'top 70%'
+            },
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            delay: 0.5
+        });
+        
+        // Progress bar
+        const progressBar = document.querySelector('.progress-bar');
+        
+        window.addEventListener('scroll', () => {
+            const totalScroll = document.body.scrollHeight - window.innerHeight;
+            const scrollPosition = window.scrollY;
+            const scrolled = (scrollPosition / totalScroll) * 100;
+            progressBar.style.width = `${scrolled}%`;
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93d2f9c875fde0e0',t:'MTc0NjgxMjM2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
+</body></html>
